@@ -28,7 +28,10 @@ import {
   LogIn
 } from 'lucide-react'
 import { CadastroCandidato, CadastroEmpresa } from '@/components/CadastroForms'
-import { RelatoriosAdmin, DashboardCharts, GerenciarEmpresas, GerenciarCandidatos } from '@/components/AdminComponents'
+import { RelatoriosAdmin, DashboardCharts, GerenciarEmpresas, GerenciarCandidatos, GerenciarNoticias } from '@/components/AdminComponents'
+import { CarrosselNoticias } from '@/components/CarrosselNoticias'
+import { NoticiasPage, NoticiaIndividual } from '@/components/NoticiasComponents'
+import { type NoticiaData } from '@/lib/backend-simulation'
 
 // Componente de navegação principal
 function Navigation({ currentView, setCurrentView }: { currentView: string, setCurrentView: (view: string) => void }) {
@@ -36,6 +39,7 @@ function Navigation({ currentView, setCurrentView }: { currentView: string, setC
 
   const navItems = [
     { id: 'home', label: 'Início', icon: <Globe className="w-4 h-4" /> },
+    { id: 'noticias', label: 'Notícias', icon: <FileText className="w-4 h-4" /> },
     { id: 'vagas', label: 'Vagas', icon: <Briefcase className="w-4 h-4" /> },
     { id: 'candidato', label: 'Área do Candidato', icon: <Users className="w-4 h-4" /> },
     { id: 'empresa', label: 'Área da Empresa', icon: <Building2 className="w-4 h-4" /> },
@@ -52,7 +56,7 @@ function Navigation({ currentView, setCurrentView }: { currentView: string, setC
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">SETEMP</h1>
-              <p className="text-sm text-gray-600">Secretaria de Empreendedorismo e Trabalho</p>
+              <p className="text-sm text-gray-600">Secretaria Executiva do Trabalho e Empreendedorismo</p>
             </div>
           </div>
           
@@ -113,7 +117,7 @@ function Navigation({ currentView, setCurrentView }: { currentView: string, setC
 }
 
 // Página inicial institucional
-function HomePage() {
+function HomePage({ onNoticiaClick }: { onNoticiaClick: (noticia: NoticiaData) => void }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [showCadastroCandidato, setShowCadastroCandidato] = useState(false)
   const [showCadastroEmpresa, setShowCadastroEmpresa] = useState(false)
@@ -182,7 +186,7 @@ function HomePage() {
             Conectando <span className="text-blue-600">Talentos</span> e <span className="text-green-600">Oportunidades</span>
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            A SETEMP é a ponte entre trabalhadores e empresas no Amazonas, oferecendo oportunidades de emprego e programas de capacitação profissional.
+            A SETEMP – Secretaria Executiva do Trabalho e Empreendedorismo é a ponte entre trabalhadores e empresas no Amazonas, oferecendo oportunidades de emprego e programas de capacitação profissional.
           </p>
           
           {/* Botões de Acesso Rápido */}
@@ -228,8 +232,20 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Estatísticas */}
+      {/* Carrossel de Notícias */}
       <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">Últimas Notícias</h3>
+            <p className="text-xl text-gray-600">Fique por dentro das novidades da SETEMP</p>
+          </div>
+          
+          <CarrosselNoticias onNoticiaClick={onNoticiaClick} />
+        </div>
+      </section>
+
+      {/* Estatísticas */}
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
@@ -261,7 +277,7 @@ function HomePage() {
       </section>
 
       {/* Vagas em Destaque */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-gray-900 mb-4">Vagas em Destaque</h3>
@@ -316,7 +332,7 @@ function HomePage() {
       </section>
 
       {/* Programas e Serviços */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-gray-900 mb-4">Nossos Programas</h3>
@@ -353,7 +369,7 @@ function HomePage() {
             <div>
               <h3 className="text-3xl font-bold mb-6">Sobre a SETEMP</h3>
               <p className="text-xl mb-6 text-blue-100">
-                A Secretaria de Empreendedorismo e Trabalho do Amazonas é o órgão responsável por promover políticas públicas de geração de emprego, renda e desenvolvimento econômico no estado.
+                A Secretaria Executiva do Trabalho e Empreendedorismo do Amazonas é o órgão responsável por promover políticas públicas de geração de emprego, renda e desenvolvimento econômico no estado.
               </p>
               <div className="space-y-4">
                 <div className="flex items-center">
@@ -395,7 +411,7 @@ function HomePage() {
       </section>
 
       {/* Contato */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-gray-900 mb-4">Entre em Contato</h3>
@@ -1006,6 +1022,7 @@ function AdminPanel() {
               { id: 'dashboard', label: 'Dashboard' },
               { id: 'candidatos', label: 'Candidatos' },
               { id: 'empresas', label: 'Empresas' },
+              { id: 'noticias', label: 'Notícias' },
               { id: 'vagas', label: 'Vagas' },
               { id: 'relatorios', label: 'Relatórios' },
               { id: 'sine', label: 'Integração SINE' }
@@ -1038,6 +1055,11 @@ function AdminPanel() {
         {/* Gerenciar Empresas */}
         {activeTab === 'empresas' && (
           <GerenciarEmpresas />
+        )}
+
+        {/* Gerenciar Notícias */}
+        {activeTab === 'noticias' && (
+          <GerenciarNoticias />
         )}
 
         {/* Relatórios */}
@@ -1188,7 +1210,7 @@ function Footer() {
         </div>
         
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; 2024 SETEMP - Secretaria de Empreendedorismo e Trabalho do Amazonas. Todos os direitos reservados.</p>
+          <p>&copy; 2024 SETEMP - Secretaria Executiva do Trabalho e Empreendedorismo do Amazonas. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>
@@ -1198,11 +1220,26 @@ function Footer() {
 // Componente principal
 export default function Home() {
   const [currentView, setCurrentView] = useState('home')
+  const [noticiaAtual, setNoticiaAtual] = useState<NoticiaData | null>(null)
+
+  const handleNoticiaClick = (noticia: NoticiaData) => {
+    setNoticiaAtual(noticia)
+    setCurrentView('noticia-individual')
+  }
 
   const renderCurrentView = () => {
     switch (currentView) {
       case 'home':
-        return <HomePage />
+        return <HomePage onNoticiaClick={handleNoticiaClick} />
+      case 'noticias':
+        return <NoticiasPage onVoltar={() => setCurrentView('home')} />
+      case 'noticia-individual':
+        return noticiaAtual ? (
+          <NoticiaIndividual 
+            slug={noticiaAtual.slug} 
+            onVoltar={() => setCurrentView('noticias')} 
+          />
+        ) : <HomePage onNoticiaClick={handleNoticiaClick} />
       case 'vagas':
         return <VagasPage />
       case 'candidato':
@@ -1212,7 +1249,7 @@ export default function Home() {
       case 'admin':
         return <AdminPanel />
       default:
-        return <HomePage />
+        return <HomePage onNoticiaClick={handleNoticiaClick} />
     }
   }
 
