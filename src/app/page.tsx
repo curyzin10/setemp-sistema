@@ -25,7 +25,8 @@ import {
   X,
   UserCheck,
   Settings,
-  LogIn
+  LogIn,
+  Heart
 } from 'lucide-react'
 import { CadastroCandidato, CadastroEmpresa } from '@/components/CadastroForms'
 import { RelatoriosAdmin, DashboardCharts, GerenciarEmpresas, GerenciarCandidatos, GerenciarNoticias } from '@/components/AdminComponents'
@@ -116,8 +117,164 @@ function Navigation({ currentView, setCurrentView }: { currentView: string, setC
   )
 }
 
+// Página individual de vaga
+function VagaDetalhes({ vagaId, onVoltar, onCandidatar }: { 
+  vagaId: number, 
+  onVoltar: () => void,
+  onCandidatar: () => void 
+}) {
+  // Dados da vaga (em produção viria do backend)
+  const vaga = {
+    id: vagaId,
+    cargo: "Desenvolvedor Full Stack",
+    empresa: "Tech Solutions Ltda",
+    cidade: "Manaus",
+    salario: "R$ 4.500 - R$ 6.000",
+    tipo: "CLT",
+    modalidade: "Híbrido",
+    publicada: "2 dias atrás",
+    descricao: "Estamos buscando um Desenvolvedor Full Stack para integrar nossa equipe de tecnologia. O profissional será responsável pelo desenvolvimento de aplicações web modernas, utilizando as melhores práticas do mercado.",
+    requisitos: [
+      "Experiência mínima de 2 anos com React e Node.js",
+      "Conhecimento em PostgreSQL",
+      "Experiência com Git e metodologias ágeis",
+      "Inglês intermediário",
+      "Ensino superior completo ou cursando"
+    ],
+    beneficios: [
+      "Vale alimentação R$ 800",
+      "Vale transporte",
+      "Plano de saúde",
+      "Plano odontológico",
+      "Gympass",
+      "Home office flexível"
+    ],
+    atividades: [
+      "Desenvolvimento de aplicações web responsivas",
+      "Criação e manutenção de APIs REST",
+      "Integração com bancos de dados",
+      "Participação em code reviews",
+      "Colaboração com equipe de UX/UI"
+    ]
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <Button 
+            variant="outline" 
+            onClick={onVoltar}
+            className="mb-4"
+          >
+            <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
+            Voltar para Vagas
+          </Button>
+          
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-2xl mb-2">{vaga.cargo}</CardTitle>
+                  <CardDescription className="flex items-center text-lg text-gray-600 mb-2">
+                    <Building2 className="w-5 h-5 mr-2" />
+                    {vaga.empresa}
+                  </CardDescription>
+                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    <span className="flex items-center">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      {vaga.cidade}
+                    </span>
+                    <span className="flex items-center">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {vaga.publicada}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-green-600 font-semibold text-xl mb-2">{vaga.salario}</div>
+                  <div className="flex space-x-2">
+                    <Badge variant="secondary">{vaga.tipo}</Badge>
+                    <Badge variant="outline">{vaga.modalidade}</Badge>
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Descrição da Vaga</h3>
+                  <p className="text-gray-600 leading-relaxed">{vaga.descricao}</p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Principais Atividades</h3>
+                  <ul className="space-y-2">
+                    {vaga.atividades.map((atividade, index) => (
+                      <li key={index} className="flex items-start">
+                        <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-600">{atividade}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Requisitos</h3>
+                  <ul className="space-y-2">
+                    {vaga.requisitos.map((requisito, index) => (
+                      <li key={index} className="flex items-start">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full mr-3 mt-2 flex-shrink-0" />
+                        <span className="text-gray-600">{requisito}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Benefícios</h3>
+                  <div className="grid md:grid-cols-2 gap-2">
+                    {vaga.beneficios.map((beneficio, index) => (
+                      <div key={index} className="flex items-center">
+                        <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                        <span className="text-gray-600 text-sm">{beneficio}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t pt-6">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button 
+                      className="bg-blue-600 hover:bg-blue-700 flex-1"
+                      onClick={onCandidatar}
+                    >
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Candidatar-se a esta Vaga
+                    </Button>
+                    <Button variant="outline" className="flex-1">
+                      <Heart className="w-4 h-4 mr-2" />
+                      Salvar Vaga
+                    </Button>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-3 text-center">
+                    Ao se candidatar, você será redirecionado para o cadastro de candidato
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Página inicial institucional
-function HomePage({ onNoticiaClick }: { onNoticiaClick: (noticia: NoticiaData) => void }) {
+function HomePage({ onNoticiaClick, onVagaClick }: { 
+  onNoticiaClick: (noticia: NoticiaData) => void,
+  onVagaClick: (vagaId: number) => void 
+}) {
   const [searchTerm, setSearchTerm] = useState('')
   const [showCadastroCandidato, setShowCadastroCandidato] = useState(false)
   const [showCadastroEmpresa, setShowCadastroEmpresa] = useState(false)
@@ -177,6 +334,19 @@ function HomePage({ onNoticiaClick }: { onNoticiaClick: (noticia: NoticiaData) =
     }
   ]
 
+  const handleBuscarVagas = () => {
+    if (searchTerm.trim()) {
+      // Simular busca - em produção faria busca real
+      alert(`Buscando vagas por: "${searchTerm}"\n\nEsta funcionalidade redirecionaria para a página de vagas com os resultados filtrados.`)
+    } else {
+      alert('Digite um termo para buscar vagas (cargo ou empresa)')
+    }
+  }
+
+  const handleVerDetalhesVaga = (vagaId: number) => {
+    onVagaClick(vagaId)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       {/* Hero Section */}
@@ -220,9 +390,17 @@ function HomePage({ onNoticiaClick }: { onNoticiaClick: (noticia: NoticiaData) =
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="text-lg py-3"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleBuscarVagas()
+                      }
+                    }}
                   />
                 </div>
-                <Button className="bg-blue-600 hover:bg-blue-700 px-8 py-3">
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 px-8 py-3"
+                  onClick={handleBuscarVagas}
+                >
                   <Search className="w-5 h-5 mr-2" />
                   Buscar Vagas
                 </Button>
@@ -313,7 +491,10 @@ function HomePage({ onNoticiaClick }: { onNoticiaClick: (noticia: NoticiaData) =
                       {vaga.salario}
                     </div>
                   </div>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    onClick={() => handleVerDetalhesVaga(vaga.id)}
+                  >
                     Ver Detalhes
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -794,6 +975,62 @@ function CandidatoPanel() {
 function EmpresaPanel() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [novaVagaData, setNovaVagaData] = useState({
+    cargo: '',
+    cidade: '',
+    descricao: '',
+    salarioMin: '',
+    salarioMax: '',
+    tipoContrato: 'CLT',
+    requisitos: ''
+  })
+
+  const handlePublicarVaga = () => {
+    // Validar campos obrigatórios
+    if (!novaVagaData.cargo.trim()) {
+      alert('Por favor, preencha o cargo da vaga.')
+      return
+    }
+    
+    if (!novaVagaData.cidade.trim()) {
+      alert('Por favor, preencha a cidade.')
+      return
+    }
+    
+    if (!novaVagaData.descricao.trim()) {
+      alert('Por favor, preencha a descrição da vaga.')
+      return
+    }
+    
+    if (!novaVagaData.salarioMin.trim() || !novaVagaData.salarioMax.trim()) {
+      alert('Por favor, preencha a faixa salarial.')
+      return
+    }
+
+    // Simular publicação da vaga
+    alert(`✅ Vaga publicada com sucesso!
+
+Cargo: ${novaVagaData.cargo}
+Cidade: ${novaVagaData.cidade}
+Salário: R$ ${novaVagaData.salarioMin} - R$ ${novaVagaData.salarioMax}
+Tipo: ${novaVagaData.tipoContrato}
+
+A vaga foi enviada para análise da SETEMP e será publicada em breve no portal de vagas.`)
+
+    // Limpar formulário
+    setNovaVagaData({
+      cargo: '',
+      cidade: '',
+      descricao: '',
+      salarioMin: '',
+      salarioMax: '',
+      tipoContrato: 'CLT',
+      requisitos: ''
+    })
+    
+    // Voltar para o dashboard
+    setActiveTab('dashboard')
+  }
 
   if (!isLoggedIn) {
     return (
@@ -910,40 +1147,62 @@ function EmpresaPanel() {
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Cargo</label>
-                  <Input placeholder="Ex: Desenvolvedor Full Stack" />
+                  <label className="text-sm font-medium">Cargo *</label>
+                  <Input 
+                    placeholder="Ex: Desenvolvedor Full Stack" 
+                    value={novaVagaData.cargo}
+                    onChange={(e) => setNovaVagaData({...novaVagaData, cargo: e.target.value})}
+                  />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Cidade</label>
-                  <Input placeholder="Ex: Manaus" />
+                  <label className="text-sm font-medium">Cidade *</label>
+                  <Input 
+                    placeholder="Ex: Manaus" 
+                    value={novaVagaData.cidade}
+                    onChange={(e) => setNovaVagaData({...novaVagaData, cidade: e.target.value})}
+                  />
                 </div>
               </div>
               
               <div>
-                <label className="text-sm font-medium">Descrição da Vaga</label>
+                <label className="text-sm font-medium">Descrição da Vaga *</label>
                 <textarea 
                   className="w-full mt-1 p-3 border border-gray-300 rounded-md"
                   rows={4}
                   placeholder="Descreva as principais atividades e responsabilidades..."
+                  value={novaVagaData.descricao}
+                  onChange={(e) => setNovaVagaData({...novaVagaData, descricao: e.target.value})}
                 />
               </div>
 
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Salário Mínimo</label>
-                  <Input placeholder="R$ 0,00" />
+                  <label className="text-sm font-medium">Salário Mínimo *</label>
+                  <Input 
+                    placeholder="Ex: 2500" 
+                    value={novaVagaData.salarioMin}
+                    onChange={(e) => setNovaVagaData({...novaVagaData, salarioMin: e.target.value})}
+                  />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Salário Máximo</label>
-                  <Input placeholder="R$ 0,00" />
+                  <label className="text-sm font-medium">Salário Máximo *</label>
+                  <Input 
+                    placeholder="Ex: 4000" 
+                    value={novaVagaData.salarioMax}
+                    onChange={(e) => setNovaVagaData({...novaVagaData, salarioMax: e.target.value})}
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Tipo de Contrato</label>
-                  <select className="w-full mt-1 p-2 border border-gray-300 rounded-md">
-                    <option>CLT</option>
-                    <option>PJ</option>
-                    <option>Estágio</option>
-                    <option>Temporário</option>
+                  <select 
+                    className="w-full mt-1 p-2 border border-gray-300 rounded-md"
+                    value={novaVagaData.tipoContrato}
+                    onChange={(e) => setNovaVagaData({...novaVagaData, tipoContrato: e.target.value})}
+                  >
+                    <option value="CLT">CLT</option>
+                    <option value="PJ">PJ</option>
+                    <option value="Estágio">Estágio</option>
+                    <option value="Temporário">Temporário</option>
                   </select>
                 </div>
               </div>
@@ -954,12 +1213,40 @@ function EmpresaPanel() {
                   className="w-full mt-1 p-3 border border-gray-300 rounded-md"
                   rows={3}
                   placeholder="Liste os requisitos necessários..."
+                  value={novaVagaData.requisitos}
+                  onChange={(e) => setNovaVagaData({...novaVagaData, requisitos: e.target.value})}
                 />
               </div>
 
-              <Button className="bg-green-600 hover:bg-green-700">
-                Publicar Vaga
-              </Button>
+              <div className="flex space-x-4">
+                <Button 
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={handlePublicarVaga}
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Publicar Vaga
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setNovaVagaData({
+                      cargo: '',
+                      cidade: '',
+                      descricao: '',
+                      salarioMin: '',
+                      salarioMax: '',
+                      tipoContrato: 'CLT',
+                      requisitos: ''
+                    })
+                  }}
+                >
+                  Limpar Formulário
+                </Button>
+              </div>
+              
+              <div className="text-sm text-gray-500 bg-blue-50 p-4 rounded-lg">
+                <strong>Importante:</strong> Após a publicação, sua vaga será analisada pela equipe da SETEMP e ficará disponível no portal de vagas em até 24 horas.
+              </div>
             </CardContent>
           </Card>
         )}
@@ -1221,16 +1508,27 @@ function Footer() {
 export default function Home() {
   const [currentView, setCurrentView] = useState('home')
   const [noticiaAtual, setNoticiaAtual] = useState<NoticiaData | null>(null)
+  const [vagaAtual, setVagaAtual] = useState<number | null>(null)
+  const [showCadastroCandidato, setShowCadastroCandidato] = useState(false)
 
   const handleNoticiaClick = (noticia: NoticiaData) => {
     setNoticiaAtual(noticia)
     setCurrentView('noticia-individual')
   }
 
+  const handleVagaClick = (vagaId: number) => {
+    setVagaAtual(vagaId)
+    setCurrentView('vaga-detalhes')
+  }
+
+  const handleCandidatar = () => {
+    setShowCadastroCandidato(true)
+  }
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'home':
-        return <HomePage onNoticiaClick={handleNoticiaClick} />
+        return <HomePage onNoticiaClick={handleNoticiaClick} onVagaClick={handleVagaClick} />
       case 'noticias':
         return <NoticiasPage onVoltar={() => setCurrentView('home')} />
       case 'noticia-individual':
@@ -1239,7 +1537,15 @@ export default function Home() {
             slug={noticiaAtual.slug} 
             onVoltar={() => setCurrentView('noticias')} 
           />
-        ) : <HomePage onNoticiaClick={handleNoticiaClick} />
+        ) : <HomePage onNoticiaClick={handleNoticiaClick} onVagaClick={handleVagaClick} />
+      case 'vaga-detalhes':
+        return vagaAtual ? (
+          <VagaDetalhes 
+            vagaId={vagaAtual}
+            onVoltar={() => setCurrentView('home')}
+            onCandidatar={handleCandidatar}
+          />
+        ) : <HomePage onNoticiaClick={handleNoticiaClick} onVagaClick={handleVagaClick} />
       case 'vagas':
         return <VagasPage />
       case 'candidato':
@@ -1249,7 +1555,7 @@ export default function Home() {
       case 'admin':
         return <AdminPanel />
       default:
-        return <HomePage onNoticiaClick={handleNoticiaClick} />
+        return <HomePage onNoticiaClick={handleNoticiaClick} onVagaClick={handleVagaClick} />
     }
   }
 
@@ -1258,6 +1564,11 @@ export default function Home() {
       <Navigation currentView={currentView} setCurrentView={setCurrentView} />
       {renderCurrentView()}
       <Footer />
+      
+      {/* Modal de Cadastro de Candidato */}
+      {showCadastroCandidato && (
+        <CadastroCandidato onClose={() => setShowCadastroCandidato(false)} />
+      )}
     </div>
   )
 }

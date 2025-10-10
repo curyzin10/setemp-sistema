@@ -33,11 +33,13 @@ export function CarrosselNoticias({ onNoticiaClick }: CarrosselNoticiasProps) {
   }, [isAutoPlay, noticias.length])
 
   const proximaNoticia = () => {
+    if (noticias.length === 0) return
     setIndiceAtual((prev) => (prev + 1) % noticias.length)
     setIsAutoPlay(false) // Parar autoplay quando usuário navegar manualmente
   }
 
   const noticiaAnterior = () => {
+    if (noticias.length === 0) return
     setIndiceAtual((prev) => (prev - 1 + noticias.length) % noticias.length)
     setIsAutoPlay(false) // Parar autoplay quando usuário navegar manualmente
   }
@@ -67,9 +69,24 @@ export function CarrosselNoticias({ onNoticiaClick }: CarrosselNoticiasProps) {
     <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden">
       {/* Imagem de fundo com overlay */}
       <div 
-        className="relative h-96 bg-cover bg-center"
-        style={{ backgroundImage: `url(${noticiaAtual.imagemDestaque})` }}
+        className="relative h-96 bg-cover bg-center bg-gray-200"
+        style={{ 
+          backgroundImage: noticiaAtual.imagemDestaque ? `url(${noticiaAtual.imagemDestaque})` : 'none',
+          backgroundColor: noticiaAtual.imagemDestaque ? 'transparent' : '#f3f4f6'
+        }}
       >
+        {/* Fallback se não houver imagem */}
+        {!noticiaAtual.imagemDestaque && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <div className="w-24 h-24 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                <Calendar className="w-12 h-12 text-blue-600" />
+              </div>
+              <p className="text-lg font-medium">Notícia SETEMP</p>
+            </div>
+          </div>
+        )}
+        
         {/* Overlay escuro */}
         <div className="absolute inset-0 bg-black bg-opacity-50" />
         
@@ -77,8 +94,9 @@ export function CarrosselNoticias({ onNoticiaClick }: CarrosselNoticiasProps) {
         <Button
           variant="outline"
           size="icon"
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 z-10"
           onClick={noticiaAnterior}
+          disabled={noticias.length <= 1}
         >
           <ChevronLeft className="w-5 h-5" />
         </Button>
@@ -86,8 +104,9 @@ export function CarrosselNoticias({ onNoticiaClick }: CarrosselNoticiasProps) {
         <Button
           variant="outline"
           size="icon"
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 z-10"
           onClick={proximaNoticia}
+          disabled={noticias.length <= 1}
         >
           <ChevronRight className="w-5 h-5" />
         </Button>
@@ -134,19 +153,21 @@ export function CarrosselNoticias({ onNoticiaClick }: CarrosselNoticiasProps) {
       </div>
 
       {/* Indicadores de posição */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        {noticias.map((_, index) => (
-          <button
-            key={index}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index === indiceAtual 
-                ? 'bg-white scale-110' 
-                : 'bg-white/50 hover:bg-white/70'
-            }`}
-            onClick={() => irParaNoticia(index)}
-          />
-        ))}
-      </div>
+      {noticias.length > 1 && (
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+          {noticias.map((_, index) => (
+            <button
+              key={index}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === indiceAtual 
+                  ? 'bg-white scale-110' 
+                  : 'bg-white/50 hover:bg-white/70'
+              }`}
+              onClick={() => irParaNoticia(index)}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Informações adicionais */}
       <div className="p-4 bg-gray-50 border-t">
