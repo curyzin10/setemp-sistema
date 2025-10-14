@@ -38,7 +38,8 @@ import {
   Trash2,
   Save,
   Image as ImageIcon,
-  Globe
+  Globe,
+  Settings
 } from 'lucide-react'
 import { 
   obterEmpresasPendentes, 
@@ -1537,6 +1538,189 @@ export function GerenciarCandidatos() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// Componente para Gerenciar Vagas
+export function GerenciarVagas() {
+  const [vagas, setVagas] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    carregarVagas()
+  }, [])
+
+  const carregarVagas = () => {
+    setLoading(true)
+    try {
+      // Função para obter vagas do localStorage
+      const getVagasFromStorage = (): any[] => {
+        if (typeof window === 'undefined') return []
+        const stored = localStorage.getItem('setemp_vagas')
+        return stored ? JSON.parse(stored) : []
+      }
+      
+      const vagasStorage = getVagasFromStorage()
+      setVagas(vagasStorage)
+    } catch (error) {
+      console.error('Erro ao carregar vagas:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900">Gerenciar Vagas</h2>
+        <div className="flex space-x-3">
+          <Button variant="outline">
+            <Search className="w-4 h-4 mr-2" />
+            Filtrar
+          </Button>
+          <Button className="bg-purple-600 hover:bg-purple-700">
+            <Briefcase className="w-4 h-4 mr-2" />
+            Exportar Relatório
+          </Button>
+        </div>
+      </div>
+
+      {/* Estatísticas das Vagas */}
+      <div className="grid md:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Briefcase className="w-12 h-12 mx-auto mb-4 text-blue-600" />
+            <div className="text-2xl font-bold mb-2">{vagas.length}</div>
+            <div className="text-sm text-gray-600">Total de Vagas</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-600" />
+            <div className="text-2xl font-bold mb-2">{vagas.filter(v => v.status === 'ativa').length}</div>
+            <div className="text-sm text-gray-600">Vagas Ativas</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Clock className="w-12 h-12 mx-auto mb-4 text-yellow-600" />
+            <div className="text-2xl font-bold mb-2">{vagas.filter(v => v.status === 'pausada').length}</div>
+            <div className="text-sm text-gray-600">Vagas Pausadas</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <X className="w-12 h-12 mx-auto mb-4 text-red-600" />
+            <div className="text-2xl font-bold mb-2">{vagas.filter(v => v.status === 'encerrada').length}</div>
+            <div className="text-sm text-gray-600">Vagas Encerradas</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Lista de Vagas */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Todas as Vagas Cadastradas</CardTitle>
+          <CardDescription>Gerencie todas as vagas publicadas no sistema</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {vagas.length === 0 ? (
+            <div className="text-center py-12">
+              <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">Nenhuma vaga cadastrada</h3>
+              <p className="text-gray-500">As vagas publicadas pelas empresas aparecerão aqui.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {vagas.map((vaga) => (
+                <div key={vaga.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900">{vaga.cargo}</h3>
+                        <Badge 
+                          variant={vaga.status === 'ativa' ? 'default' : vaga.status === 'pausada' ? 'secondary' : 'destructive'}
+                          className={
+                            vaga.status === 'ativa' ? 'bg-green-600' :
+                            vaga.status === 'pausada' ? 'bg-yellow-600' : 'bg-red-600'
+                          }
+                        >
+                          {vaga.status === 'ativa' ? 'Ativa' : vaga.status === 'pausada' ? 'Pausada' : 'Encerrada'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
+                        <span className="flex items-center">
+                          <Building2 className="w-4 h-4 mr-1" />
+                          {vaga.empresa}
+                        </span>
+                        <span className="flex items-center">
+                          <MapPin className="w-4 h-4 mr-1" />
+                          {vaga.cidade}
+                        </span>
+                        <span className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {vaga.publicada}
+                        </span>
+                      </div>
+                      <div className="text-green-600 font-semibold mb-2">{vaga.salario}</div>
+                      <p className="text-gray-600 text-sm">{vaga.descricao}</p>
+                    </div>
+                    <div className="flex flex-col space-y-2 ml-6">
+                      <Button variant="outline" size="sm">
+                        <Users className="w-4 h-4 mr-1" />
+                        Ver Candidatos
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Settings className="w-4 h-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className={vaga.status === 'ativa' ? 'text-yellow-600 hover:text-yellow-700' : 'text-green-600 hover:text-green-700'}
+                      >
+                        {vaga.status === 'ativa' ? (
+                          <>
+                            <Clock className="w-4 h-4 mr-1" />
+                            Pausar
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Ativar
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {vaga.requisitos && vaga.requisitos.length > 0 && (
+                    <div className="border-t pt-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">Requisitos:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {vaga.requisitos.map((req: string, index: number) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {req}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

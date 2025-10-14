@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -29,10 +29,39 @@ import {
   Heart
 } from 'lucide-react'
 import { CadastroCandidato, CadastroEmpresa } from '@/components/CadastroForms'
-import { RelatoriosAdmin, DashboardCharts, GerenciarEmpresas, GerenciarCandidatos, GerenciarNoticias } from '@/components/AdminComponents'
+import { RelatoriosAdmin, DashboardCharts, GerenciarEmpresas, GerenciarCandidatos, GerenciarNoticias, GerenciarVagas } from '@/components/AdminComponents'
 import { CarrosselNoticias } from '@/components/CarrosselNoticias'
 import { NoticiasPage, NoticiaIndividual } from '@/components/NoticiasComponents'
 import { type NoticiaData } from '@/lib/backend-simulation'
+
+// Interface para as vagas
+interface Vaga {
+  id: number
+  cargo: string
+  empresa: string
+  cidade: string
+  salario: string
+  tipo: string
+  modalidade: string
+  publicada: string
+  descricao: string
+  requisitos: string[]
+  status: 'ativa' | 'pausada' | 'encerrada'
+}
+
+// Sistema de armazenamento local para vagas
+const VAGAS_STORAGE_KEY = 'setemp_vagas'
+
+const getVagasFromStorage = (): Vaga[] => {
+  if (typeof window === 'undefined') return []
+  const stored = localStorage.getItem(VAGAS_STORAGE_KEY)
+  return stored ? JSON.parse(stored) : []
+}
+
+const saveVagasToStorage = (vagas: Vaga[]) => {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(VAGAS_STORAGE_KEY, JSON.stringify(vagas))
+}
 
 // Componente de navegação principal
 function Navigation({ currentView, setCurrentView }: { currentView: string, setCurrentView: (view: string) => void }) {
@@ -123,40 +152,64 @@ function VagaDetalhes({ vagaId, onVoltar, onCandidatar }: {
   onVoltar: () => void,
   onCandidatar: () => void 
 }) {
-  // Dados da vaga (em produção viria do backend)
-  const vaga = {
-    id: vagaId,
-    cargo: "Desenvolvedor Full Stack",
-    empresa: "Tech Solutions Ltda",
-    cidade: "Manaus",
-    salario: "R$ 4.500 - R$ 6.000",
-    tipo: "CLT",
-    modalidade: "Híbrido",
-    publicada: "2 dias atrás",
-    descricao: "Estamos buscando um Desenvolvedor Full Stack para integrar nossa equipe de tecnologia. O profissional será responsável pelo desenvolvimento de aplicações web modernas, utilizando as melhores práticas do mercado.",
-    requisitos: [
-      "Experiência mínima de 2 anos com React e Node.js",
-      "Conhecimento em PostgreSQL",
-      "Experiência com Git e metodologias ágeis",
-      "Inglês intermediário",
-      "Ensino superior completo ou cursando"
-    ],
-    beneficios: [
-      "Vale alimentação R$ 800",
-      "Vale transporte",
-      "Plano de saúde",
-      "Plano odontológico",
-      "Gympass",
-      "Home office flexível"
-    ],
-    atividades: [
-      "Desenvolvimento de aplicações web responsivas",
-      "Criação e manutenção de APIs REST",
-      "Integração com bancos de dados",
-      "Participação em code reviews",
-      "Colaboração com equipe de UX/UI"
-    ]
+  // Buscar vaga específica do storage ou usar dados padrão
+  const [vaga, setVaga] = useState<Vaga | null>(null)
+
+  useEffect(() => {
+    const vagas = getVagasFromStorage()
+    const vagaEncontrada = vagas.find(v => v.id === vagaId)
+    
+    if (vagaEncontrada) {
+      setVaga(vagaEncontrada)
+    } else {
+      // Vaga padrão se não encontrar no storage
+      setVaga({
+        id: vagaId,
+        cargo: "Desenvolvedor Full Stack",
+        empresa: "Tech Solutions Ltda",
+        cidade: "Manaus",
+        salario: "R$ 4.500 - R$ 6.000",
+        tipo: "CLT",
+        modalidade: "Híbrido",
+        publicada: "2 dias atrás",
+        descricao: "Estamos buscando um Desenvolvedor Full Stack para integrar nossa equipe de tecnologia. O profissional será responsável pelo desenvolvimento de aplicações web modernas, utilizando as melhores práticas do mercado.",
+        requisitos: [
+          "Experiência mínima de 2 anos com React e Node.js",
+          "Conhecimento em PostgreSQL",
+          "Experiência com Git e metodologias ágeis",
+          "Inglês intermediário",
+          "Ensino superior completo ou cursando"
+        ],
+        status: 'ativa'
+      })
+    }
+  }, [vagaId])
+
+  if (!vaga) {
+    return <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Carregando vaga...</p>
+      </div>
+    </div>
   }
+
+  const beneficios = [
+    "Vale alimentação R$ 800",
+    "Vale transporte",
+    "Plano de saúde",
+    "Plano odontológico",
+    "Gympass",
+    "Home office flexível"
+  ]
+
+  const atividades = [
+    "Desenvolvimento de aplicações web responsivas",
+    "Criação e manutenção de APIs REST",
+    "Integração com bancos de dados",
+    "Participação em code reviews",
+    "Colaboração com equipe de UX/UI"
+  ]
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -210,7 +263,7 @@ function VagaDetalhes({ vagaId, onVoltar, onCandidatar }: {
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Principais Atividades</h3>
                   <ul className="space-y-2">
-                    {vaga.atividades.map((atividade, index) => (
+                    {atividades.map((atividade, index) => (
                       <li key={index} className="flex items-start">
                         <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-600">{atividade}</span>
@@ -234,7 +287,7 @@ function VagaDetalhes({ vagaId, onVoltar, onCandidatar }: {
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Benefícios</h3>
                   <div className="grid md:grid-cols-2 gap-2">
-                    {vaga.beneficios.map((beneficio, index) => (
+                    {beneficios.map((beneficio, index) => (
                       <div key={index} className="flex items-center">
                         <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
                         <span className="text-gray-600 text-sm">{beneficio}</span>
@@ -278,43 +331,67 @@ function HomePage({ onNoticiaClick, onVagaClick }: {
   const [searchTerm, setSearchTerm] = useState('')
   const [showCadastroCandidato, setShowCadastroCandidato] = useState(false)
   const [showCadastroEmpresa, setShowCadastroEmpresa] = useState(false)
+  const [vagasDestaque, setVagasDestaque] = useState<Vaga[]>([])
+
+  // Carregar vagas em destaque
+  useEffect(() => {
+    const vagas = getVagasFromStorage()
+    const vagasAtivas = vagas.filter(v => v.status === 'ativa').slice(0, 3)
+    
+    // Se não houver vagas no storage, usar vagas padrão
+    if (vagasAtivas.length === 0) {
+      setVagasDestaque([
+        {
+          id: 1,
+          cargo: "Desenvolvedor Full Stack",
+          empresa: "Tech Solutions Ltda",
+          cidade: "Manaus",
+          salario: "R$ 4.500 - R$ 6.000",
+          tipo: "CLT",
+          modalidade: "Híbrido",
+          publicada: "2 dias atrás",
+          descricao: "Desenvolvimento de aplicações web usando React, Node.js e PostgreSQL",
+          requisitos: ["React", "Node.js", "PostgreSQL", "2+ anos experiência"],
+          status: 'ativa'
+        },
+        {
+          id: 2,
+          cargo: "Assistente Administrativo",
+          empresa: "Comércio Amazonas S.A",
+          cidade: "Manaus",
+          salario: "R$ 1.800 - R$ 2.200",
+          tipo: "CLT",
+          modalidade: "Presencial",
+          publicada: "1 dia atrás",
+          descricao: "Apoio administrativo geral, atendimento ao cliente e organização de documentos",
+          requisitos: ["Ensino médio completo", "Conhecimento em Excel", "Boa comunicação"],
+          status: 'ativa'
+        },
+        {
+          id: 3,
+          cargo: "Operador de Máquinas",
+          empresa: "Indústria Norte Brasil",
+          cidade: "Itacoatiara",
+          salario: "R$ 2.500 - R$ 3.000",
+          tipo: "CLT",
+          modalidade: "Presencial",
+          publicada: "3 horas atrás",
+          descricao: "Operação de máquinas industriais e controle de qualidade",
+          requisitos: ["Curso técnico", "Experiência com máquinas industriais", "Disponibilidade para turnos"],
+          status: 'ativa'
+        }
+      ])
+    } else {
+      setVagasDestaque(vagasAtivas)
+    }
+  }, [])
 
   const stats = {
     candidatos: 15420,
     empresas: 1250,
-    vagasAbertas: 890,
+    vagasAbertas: vagasDestaque.length + 887, // Soma vagas do storage + base
     vagasPreenchidas: 3240
   }
-
-  const vagasDestaque = [
-    {
-      id: 1,
-      cargo: "Desenvolvedor Full Stack",
-      empresa: "Tech Solutions Ltda",
-      cidade: "Manaus",
-      salario: "R$ 4.500 - R$ 6.000",
-      tipo: "CLT",
-      publicada: "2 dias atrás"
-    },
-    {
-      id: 2,
-      cargo: "Assistente Administrativo",
-      empresa: "Comércio Amazonas S.A",
-      cidade: "Manaus",
-      salario: "R$ 1.800 - R$ 2.200",
-      tipo: "CLT",
-      publicada: "1 dia atrás"
-    },
-    {
-      id: 3,
-      cargo: "Operador de Máquinas",
-      empresa: "Indústria Norte Brasil",
-      cidade: "Itacoatiara",
-      salario: "R$ 2.500 - R$ 3.000",
-      tipo: "CLT",
-      publicada: "3 horas atrás"
-    }
-  ]
 
   const programas = [
     {
@@ -650,45 +727,60 @@ function VagasPage() {
     empresa: '',
     tipoContrato: ''
   })
+  const [vagas, setVagas] = useState<Vaga[]>([])
 
-  const vagas = [
-    {
-      id: 1,
-      cargo: "Desenvolvedor Full Stack",
-      empresa: "Tech Solutions Ltda",
-      cidade: "Manaus",
-      salario: "R$ 4.500 - R$ 6.000",
-      tipo: "CLT",
-      modalidade: "Híbrido",
-      publicada: "2 dias atrás",
-      descricao: "Desenvolvimento de aplicações web usando React, Node.js e PostgreSQL",
-      requisitos: ["React", "Node.js", "PostgreSQL", "2+ anos experiência"]
-    },
-    {
-      id: 2,
-      cargo: "Assistente Administrativo",
-      empresa: "Comércio Amazonas S.A",
-      cidade: "Manaus",
-      salario: "R$ 1.800 - R$ 2.200",
-      tipo: "CLT",
-      modalidade: "Presencial",
-      publicada: "1 dia atrás",
-      descricao: "Apoio administrativo geral, atendimento ao cliente e organização de documentos",
-      requisitos: ["Ensino médio completo", "Conhecimento em Excel", "Boa comunicação"]
-    },
-    {
-      id: 3,
-      cargo: "Operador de Máquinas",
-      empresa: "Indústria Norte Brasil",
-      cidade: "Itacoatiara",
-      salario: "R$ 2.500 - R$ 3.000",
-      tipo: "CLT",
-      modalidade: "Presencial",
-      publicada: "3 horas atrás",
-      descricao: "Operação de máquinas industriais e controle de qualidade",
-      requisitos: ["Curso técnico", "Experiência com máquinas industriais", "Disponibilidade para turnos"]
+  // Carregar vagas do storage
+  useEffect(() => {
+    const vagasStorage = getVagasFromStorage()
+    const vagasAtivas = vagasStorage.filter(v => v.status === 'ativa')
+    
+    // Se não houver vagas no storage, usar vagas padrão
+    if (vagasAtivas.length === 0) {
+      setVagas([
+        {
+          id: 1,
+          cargo: "Desenvolvedor Full Stack",
+          empresa: "Tech Solutions Ltda",
+          cidade: "Manaus",
+          salario: "R$ 4.500 - R$ 6.000",
+          tipo: "CLT",
+          modalidade: "Híbrido",
+          publicada: "2 dias atrás",
+          descricao: "Desenvolvimento de aplicações web usando React, Node.js e PostgreSQL",
+          requisitos: ["React", "Node.js", "PostgreSQL", "2+ anos experiência"],
+          status: 'ativa'
+        },
+        {
+          id: 2,
+          cargo: "Assistente Administrativo",
+          empresa: "Comércio Amazonas S.A",
+          cidade: "Manaus",
+          salario: "R$ 1.800 - R$ 2.200",
+          tipo: "CLT",
+          modalidade: "Presencial",
+          publicada: "1 dia atrás",
+          descricao: "Apoio administrativo geral, atendimento ao cliente e organização de documentos",
+          requisitos: ["Ensino médio completo", "Conhecimento em Excel", "Boa comunicação"],
+          status: 'ativa'
+        },
+        {
+          id: 3,
+          cargo: "Operador de Máquinas",
+          empresa: "Indústria Norte Brasil",
+          cidade: "Itacoatiara",
+          salario: "R$ 2.500 - R$ 3.000",
+          tipo: "CLT",
+          modalidade: "Presencial",
+          publicada: "3 horas atrás",
+          descricao: "Operação de máquinas industriais e controle de qualidade",
+          requisitos: ["Curso técnico", "Experiência com máquinas industriais", "Disponibilidade para turnos"],
+          status: 'ativa'
+        }
+      ])
+    } else {
+      setVagas(vagasAtivas)
     }
-  ]
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -975,6 +1067,7 @@ function CandidatoPanel() {
 function EmpresaPanel() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [minhasVagas, setMinhasVagas] = useState<Vaga[]>([])
   const [novaVagaData, setNovaVagaData] = useState({
     cargo: '',
     cidade: '',
@@ -984,6 +1077,16 @@ function EmpresaPanel() {
     tipoContrato: 'CLT',
     requisitos: ''
   })
+
+  // Carregar vagas da empresa
+  useEffect(() => {
+    if (isLoggedIn) {
+      const vagas = getVagasFromStorage()
+      // Filtrar vagas da empresa logada (simulação)
+      const vagasEmpresa = vagas.filter(v => v.empresa === 'Tech Solutions Ltda')
+      setMinhasVagas(vagasEmpresa)
+    }
+  }, [isLoggedIn, activeTab])
 
   const handlePublicarVaga = () => {
     // Validar campos obrigatórios
@@ -1007,15 +1110,31 @@ function EmpresaPanel() {
       return
     }
 
-    // Simular publicação da vaga
-    alert(`✅ Vaga publicada com sucesso!
+    // Criar nova vaga
+    const novaVaga: Vaga = {
+      id: Date.now(), // ID único baseado no timestamp
+      cargo: novaVagaData.cargo,
+      empresa: 'Tech Solutions Ltda', // Empresa logada
+      cidade: novaVagaData.cidade,
+      salario: `R$ ${novaVagaData.salarioMin} - R$ ${novaVagaData.salarioMax}`,
+      tipo: novaVagaData.tipoContrato,
+      modalidade: 'Presencial', // Padrão
+      publicada: 'Agora mesmo',
+      descricao: novaVagaData.descricao,
+      requisitos: novaVagaData.requisitos.split('\n').filter(req => req.trim()),
+      status: 'ativa'
+    }
 
-Cargo: ${novaVagaData.cargo}
-Cidade: ${novaVagaData.cidade}
-Salário: R$ ${novaVagaData.salarioMin} - R$ ${novaVagaData.salarioMax}
-Tipo: ${novaVagaData.tipoContrato}
+    // Salvar no storage
+    const vagasExistentes = getVagasFromStorage()
+    const novasVagas = [...vagasExistentes, novaVaga]
+    saveVagasToStorage(novasVagas)
 
-A vaga foi enviada para análise da SETEMP e será publicada em breve no portal de vagas.`)
+    // Atualizar lista local
+    setMinhasVagas(prev => [...prev, novaVaga])
+
+    // Feedback de sucesso
+    alert(`✅ Vaga publicada com sucesso!\n\nCargo: ${novaVaga.cargo}\nCidade: ${novaVaga.cidade}\nSalário: ${novaVaga.salario}\nTipo: ${novaVaga.tipo}\n\nA vaga já está disponível no portal de vagas e pode ser visualizada na aba "Minhas Vagas".`)
 
     // Limpar formulário
     setNovaVagaData({
@@ -1109,7 +1228,7 @@ A vaga foi enviada para análise da SETEMP e será publicada em breve no portal 
             <Card>
               <CardContent className="p-6 text-center">
                 <Briefcase className="w-12 h-12 mx-auto mb-4 text-blue-600" />
-                <div className="text-2xl font-bold mb-2">5</div>
+                <div className="text-2xl font-bold mb-2">{minhasVagas.length}</div>
                 <div className="text-sm text-gray-600">Vagas Ativas</div>
               </CardContent>
             </Card>
@@ -1134,6 +1253,160 @@ A vaga foi enviada para análise da SETEMP e será publicada em breve no portal 
                 <div className="text-sm text-gray-600">Taxa de Sucesso</div>
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {/* Minhas Vagas */}
+        {activeTab === 'vagas' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Minhas Vagas</h2>
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => setActiveTab('nova-vaga')}
+              >
+                + Nova Vaga
+              </Button>
+            </div>
+            
+            {minhasVagas.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">Nenhuma vaga publicada</h3>
+                  <p className="text-gray-500 mb-6">Comece publicando sua primeira vaga para atrair candidatos qualificados.</p>
+                  <Button 
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={() => setActiveTab('nova-vaga')}
+                  >
+                    Publicar Primeira Vaga
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {minhasVagas.map((vaga) => (
+                  <Card key={vaga.id}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-xl">{vaga.cargo}</CardTitle>
+                          <CardDescription className="flex items-center space-x-4 mt-2">
+                            <span className="flex items-center">
+                              <MapPin className="w-4 h-4 mr-1" />
+                              {vaga.cidade}
+                            </span>
+                            <span className="flex items-center">
+                              <Clock className="w-4 h-4 mr-1" />
+                              {vaga.publicada}
+                            </span>
+                          </CardDescription>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-green-600 font-semibold mb-2">{vaga.salario}</div>
+                          <Badge 
+                            variant={vaga.status === 'ativa' ? 'default' : 'secondary'}
+                            className={vaga.status === 'ativa' ? 'bg-green-600' : 'bg-gray-600'}
+                          >
+                            {vaga.status === 'ativa' ? 'Ativa' : 'Pausada'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">{vaga.descricao}</p>
+                      <div className="flex space-x-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            // Simular visualização de candidatos
+                            const candidatos = [
+                              { nome: 'João Silva', email: 'joao@email.com', telefone: '(92) 99999-1234', status: 'Novo' },
+                              { nome: 'Maria Santos', email: 'maria@email.com', telefone: '(92) 99999-5678', status: 'Em análise' },
+                              { nome: 'Pedro Costa', email: 'pedro@email.com', telefone: '(92) 99999-9012', status: 'Aprovado' }
+                            ]
+                            
+                            let candidatosText = `📋 CANDIDATOS PARA: ${vaga.cargo}\n\n`
+                            candidatos.forEach((candidato, index) => {
+                              candidatosText += `${index + 1}. ${candidato.nome}\n`
+                              candidatosText += `   📧 ${candidato.email}\n`
+                              candidatosText += `   📱 ${candidato.telefone}\n`
+                              candidatosText += `   📊 Status: ${candidato.status}\n\n`
+                            })
+                            candidatosText += `Total: ${candidatos.length} candidatos`
+                            
+                            alert(candidatosText)
+                          }}
+                        >
+                          Ver Candidatos
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            const novosDados = {
+                              cargo: prompt('Cargo:', vaga.cargo) || vaga.cargo,
+                              cidade: prompt('Cidade:', vaga.cidade) || vaga.cidade,
+                              salario: prompt('Salário:', vaga.salario) || vaga.salario,
+                              descricao: prompt('Descrição:', vaga.descricao) || vaga.descricao
+                            }
+                            
+                            // Atualizar vaga no storage
+                            const vagas = getVagasFromStorage()
+                            const vagaIndex = vagas.findIndex(v => v.id === vaga.id)
+                            if (vagaIndex !== -1) {
+                              vagas[vagaIndex] = {
+                                ...vagas[vagaIndex],
+                                cargo: novosDados.cargo,
+                                cidade: novosDados.cidade,
+                                salario: novosDados.salario,
+                                descricao: novosDados.descricao
+                              }
+                              saveVagasToStorage(vagas)
+                              
+                              // Atualizar estado local
+                              setMinhasVagas(prev => prev.map(v => 
+                                v.id === vaga.id ? { ...v, ...novosDados } : v
+                              ))
+                              
+                              alert('✅ Vaga atualizada com sucesso!')
+                            }
+                          }}
+                        >
+                          Editar
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            const novoStatus = vaga.status === 'ativa' ? 'pausada' : 'ativa'
+                            const acao = novoStatus === 'pausada' ? 'pausada' : 'reativada'
+                            
+                            // Atualizar status no storage
+                            const vagas = getVagasFromStorage()
+                            const vagaIndex = vagas.findIndex(v => v.id === vaga.id)
+                            if (vagaIndex !== -1) {
+                              vagas[vagaIndex].status = novoStatus
+                              saveVagasToStorage(vagas)
+                              
+                              // Atualizar estado local
+                              setMinhasVagas(prev => prev.map(v => 
+                                v.id === vaga.id ? { ...v, status: novoStatus } : v
+                              ))
+                              
+                              alert(`✅ Vaga ${acao} com sucesso!\n\nCargo: ${vaga.cargo}\nStatus: ${novoStatus === 'ativa' ? 'Ativa' : 'Pausada'}`)
+                            }
+                          }}
+                        >
+                          {vaga.status === 'ativa' ? 'Pausar' : 'Ativar'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -1212,7 +1485,7 @@ A vaga foi enviada para análise da SETEMP e será publicada em breve no portal 
                 <textarea 
                   className="w-full mt-1 p-3 border border-gray-300 rounded-md"
                   rows={3}
-                  placeholder="Liste os requisitos necessários..."
+                  placeholder="Liste os requisitos necessários (um por linha)..."
                   value={novaVagaData.requisitos}
                   onChange={(e) => setNovaVagaData({...novaVagaData, requisitos: e.target.value})}
                 />
@@ -1245,7 +1518,7 @@ A vaga foi enviada para análise da SETEMP e será publicada em breve no portal 
               </div>
               
               <div className="text-sm text-gray-500 bg-blue-50 p-4 rounded-lg">
-                <strong>Importante:</strong> Após a publicação, sua vaga será analisada pela equipe da SETEMP e ficará disponível no portal de vagas em até 24 horas.
+                <strong>Importante:</strong> Após a publicação, sua vaga ficará imediatamente disponível no portal de vagas e poderá ser visualizada na aba "Minhas Vagas".
               </div>
             </CardContent>
           </Card>
@@ -1347,6 +1620,153 @@ function AdminPanel() {
         {/* Gerenciar Notícias */}
         {activeTab === 'noticias' && (
           <GerenciarNoticias />
+        )}
+
+        {/* Gerenciar Vagas */}
+        {activeTab === 'vagas' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Gerenciar Vagas</h2>
+              <div className="flex space-x-3">
+                <Button variant="outline">
+                  <Search className="w-4 h-4 mr-2" />
+                  Filtrar
+                </Button>
+                <Button className="bg-purple-600 hover:bg-purple-700">
+                  <Briefcase className="w-4 h-4 mr-2" />
+                  Exportar Relatório
+                </Button>
+              </div>
+            </div>
+
+            {/* Estatísticas das Vagas */}
+            <div className="grid md:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Briefcase className="w-12 h-12 mx-auto mb-4 text-blue-600" />
+                  <div className="text-2xl font-bold mb-2">{getVagasFromStorage().length}</div>
+                  <div className="text-sm text-gray-600">Total de Vagas</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-600" />
+                  <div className="text-2xl font-bold mb-2">{getVagasFromStorage().filter(v => v.status === 'ativa').length}</div>
+                  <div className="text-sm text-gray-600">Vagas Ativas</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Clock className="w-12 h-12 mx-auto mb-4 text-yellow-600" />
+                  <div className="text-2xl font-bold mb-2">{getVagasFromStorage().filter(v => v.status === 'pausada').length}</div>
+                  <div className="text-sm text-gray-600">Vagas Pausadas</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <X className="w-12 h-12 mx-auto mb-4 text-red-600" />
+                  <div className="text-2xl font-bold mb-2">{getVagasFromStorage().filter(v => v.status === 'encerrada').length}</div>
+                  <div className="text-sm text-gray-600">Vagas Encerradas</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Lista de Vagas */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Todas as Vagas Cadastradas</CardTitle>
+                <CardDescription>Gerencie todas as vagas publicadas no sistema</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {getVagasFromStorage().length === 0 ? (
+                  <div className="text-center py-12">
+                    <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-xl font-semibold text-gray-600 mb-2">Nenhuma vaga cadastrada</h3>
+                    <p className="text-gray-500">As vagas publicadas pelas empresas aparecerão aqui.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {getVagasFromStorage().map((vaga) => (
+                      <div key={vaga.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900">{vaga.cargo}</h3>
+                              <Badge 
+                                variant={vaga.status === 'ativa' ? 'default' : vaga.status === 'pausada' ? 'secondary' : 'destructive'}
+                                className={
+                                  vaga.status === 'ativa' ? 'bg-green-600' :
+                                  vaga.status === 'pausada' ? 'bg-yellow-600' : 'bg-red-600'
+                                }
+                              >
+                                {vaga.status === 'ativa' ? 'Ativa' : vaga.status === 'pausada' ? 'Pausada' : 'Encerrada'}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
+                              <span className="flex items-center">
+                                <Building2 className="w-4 h-4 mr-1" />
+                                {vaga.empresa}
+                              </span>
+                              <span className="flex items-center">
+                                <MapPin className="w-4 h-4 mr-1" />
+                                {vaga.cidade}
+                              </span>
+                              <span className="flex items-center">
+                                <Clock className="w-4 h-4 mr-1" />
+                                {vaga.publicada}
+                              </span>
+                            </div>
+                            <div className="text-green-600 font-semibold mb-2">{vaga.salario}</div>
+                            <p className="text-gray-600 text-sm">{vaga.descricao}</p>
+                          </div>
+                          <div className="flex flex-col space-y-2 ml-6">
+                            <Button variant="outline" size="sm">
+                              <Users className="w-4 h-4 mr-1" />
+                              Ver Candidatos
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Settings className="w-4 h-4 mr-1" />
+                              Editar
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className={vaga.status === 'ativa' ? 'text-yellow-600 hover:text-yellow-700' : 'text-green-600 hover:text-green-700'}
+                            >
+                              {vaga.status === 'ativa' ? (
+                                <>
+                                  <Clock className="w-4 h-4 mr-1" />
+                                  Pausar
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  Ativar
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {vaga.requisitos && vaga.requisitos.length > 0 && (
+                          <div className="border-t pt-4">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-2">Requisitos:</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {vaga.requisitos.map((req, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {req}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {/* Relatórios */}
